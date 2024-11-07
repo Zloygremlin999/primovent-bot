@@ -10,8 +10,17 @@ from aiogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton
 )
 from aiogram.utils import executor
+import logging
 
-API_TOKEN = os.getenv('API_TOKEN')  # Получаем токен из переменной окружения
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Получаем токен из переменной окружения
+API_TOKEN = os.getenv('API_TOKEN')
+if not API_TOKEN:
+    logger.error("API_TOKEN не установлен! Пожалуйста, добавьте его в переменные окружения.")
+    exit(1)
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
@@ -64,14 +73,13 @@ products = {
 
 # Корзина пользователя
 user_cart = {}
-user_ids = set()
-order_status = {}
 
 # Шаги для FSM (Finite State Machine) для сбора контактных данных
 class CheckoutSteps(StatesGroup):
     waiting_for_contact_info = State()
     waiting_for_confirmation = State()
 
+# Функция для добавления товаров в корзину
 def add_to_cart(user_id, item):
     if user_id not in user_cart:
         user_cart[user_id] = []
@@ -81,7 +89,6 @@ def add_to_cart(user_id, item):
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     await message.answer("Вітаємо в компанії «Пріма Вент»! Оберіть розділ:", reply_markup=main_menu)
-    user_ids.add(message.from_user.id)  # Сохраняем ID пользователя
 
 @dp.message_handler(Text(equals="🏠 Головна"))
 async def show_home(message: types.Message):

@@ -1,0 +1,2 @@
+aiogram==2.21
+asyncio==3.4.3
